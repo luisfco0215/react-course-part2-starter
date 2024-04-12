@@ -1,35 +1,32 @@
-import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
-import { useEffect, useState } from 'react';
 import usePosts from '../hooks/usePosts';
-
+import React from 'react';
 
 
 const PostList = () => {
-  const [userId, setUserId] = useState<number>();
-  const { data, error, isLoading } = usePosts(userId);
+  const pageSize = 10;
+  const { data, error, isLoading, fetchNextPage, isFetchingNextPage } = usePosts({ pageSize: pageSize });
 
+  if (isLoading) return <p>Loading...</p>;
   if (error) return <p>{error.message}</p>;
 
   return (
     <>
-      <select
-        onChange={(event) => setUserId(+event.target.value)}
-        value={userId}
-        className="form-select mb-3">
-        <option value="">Select User...</option>
-        <option value="1">User 1</option>
-        <option value="2">User 2</option>
-        <option value="3">User 3</option>
-      </select>
-
       <ul className="list-group">
-        {data?.map((post) => (
-          <li key={post.id} className="list-group-item">
-            {post.title}
-          </li>
-        ))}
+        {
+          data.pages.map((page) => (
+            <React.Fragment>
+              {
+                page.map(post =>
+                  <li key={post.id} className="list-group-item">
+                    {post.title}
+                  </li>)
+              }
+            </React.Fragment>
+          ))
+        }
       </ul>
+      <button disabled={isFetchingNextPage} onClick={() => fetchNextPage()} className="btn btn-primary ms-1">
+        {isFetchingNextPage ? 'Loading...' : 'Lead More'}</button>
     </>
   );
 };
